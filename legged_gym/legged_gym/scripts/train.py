@@ -29,6 +29,7 @@
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
 import os
+import debugpy
 
 from legged_gym.envs import *
 from legged_gym.utils import get_args, task_registry
@@ -46,12 +47,16 @@ def train(args):
         args.rows = 10
         args.cols = 5
         args.num_envs = 64
+        debugpy.listen(5678)
+        print("Waiting for client to attach...")
+        debugpy.wait_for_client()
+        print("Client attached")
     else:
         mode = "online"
     
     if args.no_wandb:
         mode = "disabled"
-    wandb.init(project=args.proj_name, name=args.exptid, entity=args.entity, mode=mode, dir="../../logs")
+    wandb.init(project="exbody2-test", name=args.exptid, mode=mode, dir=LEGGED_GYM_ROOT_DIR + "/logs")
     wandb.save(LEGGED_GYM_ENVS_DIR + "/base/legged_robot_config.py", policy="now")
     wandb.save(LEGGED_GYM_ENVS_DIR + "/base/legged_robot.py", policy="now")
     wandb.save(LEGGED_GYM_ENVS_DIR + "/g1/g1_mimic_priv_config.py", policy="now")
