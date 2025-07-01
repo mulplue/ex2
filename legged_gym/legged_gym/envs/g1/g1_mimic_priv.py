@@ -144,7 +144,7 @@ class G1MimicPriv(LeggedRobot):
         self._motion_left_ground_offsets = self._motion_lib.get_motion_left_ground_offset(self._motion_ids)
         self._motion_right_ground_offsets = self._motion_lib.get_motion_right_ground_offset(self._motion_ids)
 
-        self._motion_dt = self.dt * 1.0
+        self._motion_dt = self.dt * 1.2 # a little bit tricky for data augmentation
         self._motion_num_future_steps = self.cfg.env.n_demo_steps
         self._motion_demo_offsets = torch.arange(0, self.cfg.env.n_demo_steps * self.cfg.env.interval_demo_steps, self.cfg.env.interval_demo_steps, device=self.device)
         self._demo_obs_buf = torch.zeros((self.num_envs, self.cfg.env.n_demo_steps, self.cfg.env.n_demo), device=self.device)
@@ -574,7 +574,11 @@ class G1MimicPriv(LeggedRobot):
         self.reset_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1., dim=1)
         height_cutoff = (self.root_states[:, 2] < 0.2)
 
-        # self.time_out_buf = self.episode_length_buf > self.max_episode_length # If the motion num is larger than the env num, need to set a timeout
+        '''
+        Use this line to control motions resampling frequency. 
+        Use time_out_buf can accelerate training, but may lead to unstable training.
+        '''
+        # self.time_out_buf = self.episode_length_buf > self.max_episode_length
 
         self.reset_buf |= self.time_out_buf
         self.reset_buf |= height_cutoff
